@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+import json
 from typing import List, Dict, Union
 from flask import Flask, request, jsonify
 import re
+import sys
 
 # ==== Type Definitions, feel free to add or modify ===========================
 @dataclass
@@ -28,7 +30,7 @@ class Ingredient(CookbookEntry):
 app = Flask(__name__)
 
 # Store your recipes here!
-cookbook = None
+cookbook = []
 
 # Task 1 helper (don't touch)
 @app.route("/parse", methods=['POST'])
@@ -70,14 +72,36 @@ def parse_handwriting(recipeName: str) -> Union[str | None]:
 @app.route('/entry', methods=['POST'])
 def create_entry():
 	# TODO: implement me
-	return 'not implemented', 500
+	data = request.get_json()
+
+	# print(data, file=sys.stderr)
+	# string_entry = data.get('enrty', '')
+	# entry = json.loads(string_entry)
+
+	# print(entry, file=sys.stderr)
+
+	if data["type"] != "recipe" and data["type"] != 'ingredient':
+		return "type is neither a recipe nor ingredient", 400
+	
+	if data["type"] == "ingredient" and data["cookTime"] < 0:
+		return 'cooktime must be greater than or equal to 0', 400
+	
+	for i in cookbook: 
+		if data["name"] == i["name"]:
+			return 'entry names must be unique', 400
+	
+	cookbook.append(data)
+	# print(cookbook, file=sys.stderr)
+	
+	return {}, 200
 
 
 # [TASK 3] ====================================================================
 # Endpoint that returns a summary of a recipe that corresponds to a query name
 @app.route('/summary', methods=['GET'])
 def summary():
-	# TODO: implement me
+	foodName = request.args.get('name')
+	print(foodName, file=sys.stderr)
 	return 'not implemented', 500
 
 
