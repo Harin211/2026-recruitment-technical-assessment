@@ -100,8 +100,28 @@ def create_entry():
 # Endpoint that returns a summary of a recipe that corresponds to a query name
 @app.route('/summary', methods=['GET'])
 def summary():
+	print("------------------------------------------------------")
+	print(cookbook, file=sys.stderr)
 	foodName = request.args.get('name')
-	print(foodName, file=sys.stderr)
+	print("the food name is", foodName, file=sys.stderr)
+
+	try:
+		recipe = next(food for food in cookbook if food['name'] == foodName)
+	except Exception:
+		return 'item does not exist in cookbook', 400
+	
+	if recipe["type"] == 'ingredient':
+		return 'item is an ingredient', 400
+
+	print("required items are", recipe["requiredItems"])
+
+	for i in recipe["requiredItems"]:
+		try:
+			found = next(food for food in cookbook if food['name'] == i["name"])
+		except Exception:
+			return 'required item does not exist in cookbook', 400
+
+
 	return 'not implemented', 500
 
 
